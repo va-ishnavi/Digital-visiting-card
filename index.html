@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Digital Visiting Card</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Google Font -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+
+        /* =========================================
+           CARD CONTAINER
+        ========================================= */
+
+        .card-container {
+            perspective: 1600px;
+        }
+
+
+        /* =========================================
+           CARD
+        ========================================= */
+
+        .card {
+            position: relative;
+
+            width: 100%;
+            max-width: 420px;
+
+            height: 650px;
+
+            transform-style: preserve-3d;
+
+            transition:
+                transform 0.9s cubic-bezier(.4, .2, .2, 1);
+
+            will-change: transform;
+        }
+
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+
+        /* =========================================
+           CARD FACES
+        ========================================= */
+
+        .card-face {
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+
+            transform-style: preserve-3d;
+
+            transition:
+                opacity 0.3s ease,
+                visibility 0.3s ease;
+        }
+
+
+        /* Front */
+
+        .card-front {
+            transform: rotateY(0deg);
+
+            opacity: 1;
+            visibility: visible;
+
+            pointer-events: auto;
+        }
+
+
+        /* Back */
+
+        .card-back {
+            transform: rotateY(180deg);
+
+            opacity: 0;
+            visibility: hidden;
+
+            pointer-events: none;
+        }
+
+
+        /* When flipped */
+
+        .card.flipped .card-front {
+            opacity: 0;
+            visibility: hidden;
+
+            pointer-events: none;
+        }
+
+
+        .card.flipped .card-back {
+            opacity: 1;
+            visibility: visible;
+
+            pointer-events: auto;
+        }
+
+
+        /* =========================================
+           GLOW
+        ========================================= */
+
+        .glow {
+            animation: glow 3s ease-in-out infinite;
+        }
+
+
+        @keyframes glow {
+
+            0%,
+            100% {
+
+                box-shadow:
+                    0 0 20px rgba(168, 85, 247, .2),
+                    0 0 60px rgba(59, 130, 246, .1);
+
+            }
+
+            50% {
+
+                box-shadow:
+                    0 0 40px rgba(168, 85, 247, .45),
+                    0 0 90px rgba(59, 130, 246, .25);
+
+            }
+
+        }
+
+
+        /* =========================================
+           FLOATING ORBS
+        ========================================= */
+
+        .orb {
+            position: absolute;
+
+            border-radius: 50%;
+
+            filter: blur(2px);
+
+            animation:
+                float 6s ease-in-out infinite;
+
+            pointer-events: none;
+        }
+
+
+        .orb-1 {
+
+            width: 150px;
+            height: 150px;
+
+            top: -50px;
+            left: -50px;
+
+            background:
+                rgba(236, 72, 153, .35);
+
+        }
+
+
+        .orb-2 {
+
+            width: 180px;
+            height: 180px;
+
+            right: -70px;
+            bottom: -70px;
+
+            background:
+                rgba(59, 130, 246, .3);
+
+            animation-delay: 2s;
+
+        }
+
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+
+        }
+
+
+        /* =========================================
+           PROFILE RING
+        ========================================= */
+
+        .profile-ring {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ec4899,
+                    #8b5cf6,
+                    #3b82f6,
+                    #06b6d4
+                );
+
+        }
+
+
+        /* =========================================
+           QR CODE
+        ========================================= */
+
+        #qrcode {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+        }
+
+
+        #qrcode img {
+
+            display: block;
+
+            margin: auto;
+
+            border-radius: 15px;
+
+        }
+
+
+        /* =========================================
+           SOCIAL ICON
+        ========================================= */
+
+        .social-icon {
+
+            transition:
+                all .3s ease;
+
+        }
+
+
+        .social-icon:hover {
+
+            transform:
+                translateY(-6px)
+                rotate(5deg)
+                scale(1.05);
+
+        }
+
+
+        /* =========================================
+           CONTACT ITEM
+        ========================================= */
+
+        .contact-item {
+
+            transition:
+                all .3s ease;
+
+        }
+
+
+        .contact-item:hover {
+
+            transform:
+                translateY(-4px);
+
+            background:
+                rgba(255, 255, 255, 0.10);
+
+        }
+
+
+        /* =========================================
+           BUTTON
+        ========================================= */
+
+        .card-button {
+
+            transition:
+                all .3s ease;
+
+        }
+
+
+        .card-button:hover {
+
+            transform:
+                translateY(-3px)
+                scale(1.02);
+
+        }
+
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 500px) {
+
+            .card {
+
+                height: 620px;
+
+            }
+
+        }
+
+
+        @media (max-width: 380px) {
+
+            .card {
+
+                height: 600px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body class="min-h-screen bg-slate-950 overflow-x-hidden">
+
+
+    <!-- BACKGROUND-->
+
+    <div
+        class="fixed inset-0 overflow-hidden pointer-events-none">
+
+        <div
+            class="absolute -top-40 -left-40
+            w-96 h-96
+            bg-purple-600/20
+            rounded-full
+            blur-3xl">
+        </div>
+
+
+        <div
+            class="absolute top-1/2 -right-40
+            w-96 h-96
+            bg-blue-600/20
+            rounded-full
+            blur-3xl">
+        </div>
+
+
+        <div
+            class="absolute -bottom-40 left-1/3
+            w-96 h-96
+            bg-pink-600/10
+            rounded-full
+            blur-3xl">
+        </div>
+
+    </div>
+
+
+    <!-- MAIN -->
+
+    <main
+        class="relative min-h-screen
+        flex flex-col
+        items-center
+        justify-center
+        px-4
+        py-10">
+
+
+        <!--  TITLE-->
+
+        <div
+            class="text-center mb-8">
+
+            <div
+                class="inline-flex
+                items-center
+                gap-2
+                px-4 py-2
+                rounded-full
+                bg-white/5
+                border border-white/10
+                text-purple-300
+                text-sm
+                mb-4">
+
+                <i class="fa-solid fa-id-card"></i>
+
+                Digital Visiting Card
+
+            </div>
+
+
+            <h1
+                class="text-3xl
+                sm:text-4xl
+                font-extrabold
+                text-white">
+
+                Connect With Me
+
+            </h1>
+
+
+            <p
+                class="text-gray-400
+                mt-2
+                text-sm">
+
+                Scan • Connect • Save
+
+            </p>
+
+        </div>
+
+
+        <!-- CARD CONTAINER-->
+
+        <div
+            class="card-container
+            w-full
+            flex
+            justify-center">
+
+
+            <div
+                id="card"
+                class="card glow">
+
+
+                <!-- FRONT -->
+
+                <div
+                    class="card-face card-front
+                    overflow-hidden
+                    rounded-[30px]
+                    border border-white/20
+                    bg-gradient-to-br
+                    from-slate-900
+                    via-purple-950
+                    to-slate-950
+                    shadow-2xl">
+
+
+                    <!-- ORBS -->
+
+                    <div class="orb orb-1"></div>
+
+                    <div class="orb orb-2"></div>
+
+
+                    <!-- CONTENT -->
+
+                    <div
+                        class="relative z-10
+                        h-full
+                        flex flex-col
+                        items-center
+                        justify-between
+                        p-7">
+
+
+                        <!-- TOP -->
+
+                        <div
+                            class="w-full
+                            flex
+                            justify-between
+                            items-center">
+
+
+                            <div
+                                class="text-white
+                                font-bold
+                                tracking-wider">
+
+                                VAISHNAVI
+
+                                <span
+                                    class="text-pink-400">
+
+                                    WEB DEV.
+
+                                </span>
+
+                            </div>
+
+
+                            <div
+                                class="w-10 h-10
+                                rounded-full
+                                bg-white/10
+                                backdrop-blur-md
+                                border border-white/10
+                                flex items-center
+                                justify-center
+                                text-white">
+
+                                <i class="fa-solid fa-wifi"></i>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PROFILE -->
+
+                        <div
+                            class="text-center">
+
+
+                            <div
+                                class="profile-ring
+                                w-32 h-32
+                                rounded-full
+                                mx-auto
+                                shadow-2xl
+                                p-[3px]">
+
+
+                                <div
+                                    class="w-full h-full
+                                    rounded-full
+                                    bg-slate-950
+                                    p-1">
+
+
+                                    <img
+                                        src="./images/profile1.jpg"
+                                        alt="Vaishnavi Gupta"
+                                        class="w-full h-full
+                                        object-cover
+                                        rounded-full
+                                        block">
+
+                                </div>
+
+                            </div>
+
+
+                            <h2
+                                class="text-3xl
+                                font-extrabold
+                                text-white
+                                mt-5">
+
+                                Vaishnavi Gupta
+
+                            </h2>
+
+
+                            <p
+                                class="text-transparent
+                                bg-clip-text
+                                bg-gradient-to-r
+                                from-pink-400
+                                to-cyan-400
+                                font-semibold
+                                mt-1">
+
+                                Web Developer
+
+                            </p>
+
+
+                            <p
+                                class="text-gray-400
+                                text-sm
+                                mt-3">
+
+                                Creative Websites • Digital Solutions
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- QR -->
+
+                        <div
+                            class="text-center">
+
+
+                            <div
+                                class="bg-white
+                                p-4
+                                rounded-2xl
+                                shadow-2xl
+                                inline-block
+                                hover:scale-105
+                                transition
+                                duration-500">
+
+                                <div id="qrcode"></div>
+
+                            </div>
+
+
+                            <p
+                                class="text-white
+                                font-semibold
+                                text-sm
+                                mt-3">
+
+                                Scan to Connect
+
+                            </p>
+
+
+                            <p
+                                class="text-gray-400
+                                text-xs
+                                mt-1">
+
+                                WhatsApp me instantly
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- FLIP -->
+
+                        <button
+                            type="button"
+                            onclick="flipCard(event)"
+                            class="group
+                            flex items-center
+                            gap-2
+                            text-white/80
+                            hover:text-white
+                            text-sm
+                            transition">
+
+                            View Contact Details
+
+                            <i
+                                class="fa-solid fa-arrow-right
+                                group-hover:translate-x-2
+                                transition">
+
+                            </i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BACK-->
+
+                <div
+                    class="card-face card-back
+                    overflow-hidden
+                    rounded-[30px]
+                    border border-white/20
+                    bg-gradient-to-br
+                    from-slate-950
+                    via-blue-950
+                    to-purple-950
+                    shadow-2xl">
+
+
+                    <!-- BACK CONTENT -->
+
+                    <div
+                        class="relative z-10
+                        h-full
+                        p-6
+                        flex
+                        flex-col">
+
+
+                        <!-- ORBS -->
+
+                        <div
+                            class="absolute
+                            w-40 h-40
+                            bg-cyan-500/20
+                            rounded-full
+                            blur-3xl
+                            -top-10
+                            -right-10
+                            pointer-events-none">
+                        </div>
+
+
+                        <div
+                            class="absolute
+                            w-40 h-40
+                            bg-pink-500/20
+                            rounded-full
+                            blur-3xl
+                            bottom-0
+                            -left-10
+                            pointer-events-none">
+                        </div>
+
+
+                        <!-- HEADER -->
+
+                        <div
+                            class="relative
+                            flex
+                            justify-between
+                            items-center
+                            mb-5
+                            shrink-0">
+
+
+                            <div>
+
+                                <p
+                                    class="text-xs
+                                    text-cyan-400
+                                    uppercase
+                                    tracking-widest">
+
+                                    Contact Me
+
+                                </p>
+
+
+                                <h2
+                                    class="text-2xl
+                                    font-bold
+                                    text-white">
+
+                                    Let's Connect
+
+                                </h2>
+
+                            </div>
+
+
+                            <div
+                                class="w-11 h-11
+                                rounded-2xl
+                                bg-gradient-to-br
+                                from-pink-500
+                                to-purple-600
+                                flex items-center
+                                justify-center
+                                text-white
+                                shadow-lg">
+
+                                <i
+                                    class="fa-solid
+                                    fa-address-card
+                                    text-lg">
+                                </i>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CONTACT LIST -->
+
+                        <div
+                            class="relative
+                            space-y-2.5
+                            flex-1">
+
+
+                            <!-- PHONE -->
+
+                            <a
+                                href="tel:+919027690490"
+                                onclick="stopCard(event)"
+                                class="contact-item
+                                group
+                                flex
+                                items-center
+                                gap-3
+                                p-3
+                                rounded-2xl
+                                bg-white/5
+                                border border-white/10
+                                hover:border-cyan-400/50">
+
+
+                                <div
+                                    class="w-10 h-10
+                                    shrink-0
+                                    rounded-xl
+                                    bg-gradient-to-br
+                                    from-blue-500
+                                    to-cyan-400
+                                    flex items-center
+                                    justify-center
+                                    text-white">
+
+                                    <i
+                                        class="fa-solid
+                                        fa-phone
+                                        text-sm">
+                                    </i>
+
+                                </div>
+
+
+                                <div
+                                    class="min-w-0">
+
+                                    <p
+                                        class="text-[11px]
+                                        text-gray-500">
+
+                                        Phone
+
+                                    </p>
+
+
+                                    <p
+                                        class="text-white
+                                        font-semibold
+                                        text-sm
+                                        truncate">
+
+                                        +91 9027690490
+
+                                    </p>
+
+                                </div>
+
+
+                                <i
+                                    class="fa-solid
+                                    fa-arrow-up-right-from-square
+                                    ml-auto
+                                    text-gray-500
+                                    group-hover:text-cyan-400
+                                    transition">
+                                </i>
+
+                            </a>
+
+
+                            <!-- WHATSAPP -->
+
+                            <a
+                                href="https://wa.me/919027690490?text=Hello%20Vaishnavi%2C%20I%20found%20your%20digital%20visiting%20card."
+                                target="_blank"
+                                onclick="stopCard(event)"
+                                class="contact-item
+                                group
+                                flex
+                                items-center
+                                gap-3
+                                p-3
+                                rounded-2xl
+                                bg-green-500/10
+                                border border-green-500/20
+                                hover:bg-green-500/20
+                                hover:border-green-400">
+
+
+                                <div
+                                    class="w-10 h-10
+                                    shrink-0
+                                    rounded-xl
+                                    bg-green-500
+                                    flex items-center
+                                    justify-center
+                                    text-white">
+
+                                    <i
+                                        class="fa-brands
+                                        fa-whatsapp
+                                        text-xl">
+                                    </i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <p
+                                        class="text-[11px]
+                                        text-green-300">
+
+                                        WhatsApp
+
+                                    </p>
+
+
+                                    <p
+                                        class="text-white
+                                        font-semibold
+                                        text-sm">
+
+                                        Chat With Me
+
+                                    </p>
+
+                                </div>
+
+
+                                <i
+                                    class="fa-solid
+                                    fa-arrow-up-right-from-square
+                                    ml-auto
+                                    text-green-400">
+                                </i>
+
+                            </a>
+
+
+                            <!-- EMAIL -->
+
+                            <a
+                                href="mailto:vaishnavivaishnavigupta2204@gmail.com"
+                                onclick="stopCard(event)"
+                                class="contact-item
+                                group
+                                flex
+                                items-center
+                                gap-3
+                                p-3
+                                rounded-2xl
+                                bg-white/5
+                                border border-white/10
+                                hover:border-pink-400/50">
+
+
+                                <div
+                                    class="w-10 h-10
+                                    shrink-0
+                                    rounded-xl
+                                    bg-gradient-to-br
+                                    from-pink-500
+                                    to-rose-500
+                                    flex items-center
+                                    justify-center
+                                    text-white">
+
+                                    <i
+                                        class="fa-solid
+                                        fa-envelope
+                                        text-sm">
+                                    </i>
+
+                                </div>
+
+
+                                <div
+                                    class="min-w-0">
+
+                                    <p
+                                        class="text-[11px]
+                                        text-gray-500">
+
+                                        Email
+
+                                    </p>
+
+
+                                    <p
+                                        class="text-white
+                                        font-semibold
+                                        text-xs
+                                        truncate">
+
+                                        vaishnavivaishnavigupta2204@gmail.com
+
+                                    </p>
+
+                                </div>
+
+                            </a>
+
+
+                            <!-- WEBSITE -->
+
+                            <a
+                                href="vaishnavi-resume.netlify.app"
+                                target="_blank"
+                                onclick="stopCard(event)"
+                                class="contact-item
+                                group
+                                flex
+                                items-center
+                                gap-3
+                                p-3
+                                rounded-2xl
+                                bg-white/5
+                                border border-white/10
+                                hover:border-purple-400/50">
+
+
+                                <div
+                                    class="w-10 h-10
+                                    shrink-0
+                                    rounded-xl
+                                    bg-gradient-to-br
+                                    from-purple-500
+                                    to-indigo-500
+                                    flex items-center
+                                    justify-center
+                                    text-white">
+
+                                    <i
+                                        class="fa-solid
+                                        fa-globe
+                                        text-sm">
+                                    </i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <p
+                                        class="text-[11px]
+                                        text-gray-500">
+
+                                        Portfolio
+
+                                    </p>
+
+
+                                    <p
+                                        class="text-white
+                                        font-semibold
+                                        text-sm">
+
+                                       vaishnavi-resume.netlify.app
+
+                                    </p>
+
+                                </div>
+
+                            </a>
+
+
+                            <!-- ADDRESS -->
+
+                            <div
+                                class="contact-item
+                                flex
+                                items-center
+                                gap-3
+                                p-3
+                                rounded-2xl
+                                bg-white/5
+                                border border-white/10
+                                hover:border-orange-400/50">
+
+
+                                <div
+                                    class="w-10 h-10
+                                    shrink-0
+                                    rounded-xl
+                                    bg-gradient-to-br
+                                    from-orange-500
+                                    to-yellow-500
+                                    flex items-center
+                                    justify-center
+                                    text-white">
+
+                                    <i
+                                        class="fa-solid
+                                        fa-location-dot
+                                        text-sm">
+                                    </i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <p
+                                        class="text-[11px]
+                                        text-gray-500">
+
+                                        Address
+
+                                    </p>
+
+
+                                    <p
+                                        class="text-white
+                                        font-semibold
+                                        text-sm">
+
+                                        New Delhi, India
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- SOCIAL -->
+
+                        <div
+                            class="relative
+                            flex
+                            justify-center
+                            gap-3
+                            mt-4
+                            shrink-0">
+
+
+                            <a
+                                href="https://www.instagram.com/vaishnavi.webdev/"
+                                onclick="stopCard(event)"
+                                class="social-icon
+                                w-10 h-10
+                                rounded-xl
+                                bg-white/5
+                                border border-white/10
+                                text-white
+                                flex items-center
+                                justify-center
+                                hover:bg-pink-500">
+
+                                <i
+                                    class="fa-brands
+                                    fa-instagram">
+                                </i>
+
+                            </a>
+
+
+                            <a
+                                href="https://www.linkedin.com/in/vaishnavi-gupta-09-june/"
+                                onclick="stopCard(event)"
+                                class="social-icon
+                                w-10 h-10
+                                rounded-xl
+                                bg-white/5
+                                border border-white/10
+                                text-white
+                                flex items-center
+                                justify-center
+                                hover:bg-blue-600">
+
+                                <i
+                                    class="fa-brands
+                                    fa-linkedin-in">
+                                </i>
+
+                            </a>
+
+
+                            <a
+                                href="https://github.com/va-ishnavi"
+                                onclick="stopCard(event)"
+                                class="social-icon
+                                w-10 h-10
+                                rounded-xl
+                                bg-white/5
+                                border border-white/10
+                                text-white
+                                flex items-center
+                                justify-center
+                                hover:bg-black">
+
+                              <i class="fa-brands fa-github"></i>
+                            </a>
+
+
+                            <a
+                                href="https://wa.me/919027690490"
+                                target="_blank"
+                                onclick="stopCard(event)"
+                                class="social-icon
+                                w-10 h-10
+                                rounded-xl
+                                bg-green-500
+                                text-white
+                                flex items-center
+                                justify-center
+                                hover:bg-green-600">
+
+                                <i
+                                    class="fa-brands
+                                    fa-whatsapp">
+                                </i>
+
+                            </a>
+
+                        </div>
+
+
+                        <!-- BUTTONS -->
+
+                        <div
+                            class="relative
+                            flex
+                            gap-3
+                            mt-4
+                            shrink-0">
+
+
+                            <!-- SAVE CONTACT -->
+
+                            <button
+                                type="button"
+                                onclick="saveContact(event)"
+                                class="card-button
+                                flex-1
+                                py-3
+                                rounded-xl
+                                bg-white
+                                text-slate-900
+                                font-bold
+                                text-sm
+                                hover:bg-gray-200">
+
+
+                                <i
+                                    class="fa-solid
+                                    fa-user-plus
+                                    mr-1">
+                                </i>
+
+                                Save Contact
+
+                            </button>
+
+
+                            <!-- FLIP -->
+
+                            <button
+                                type="button"
+                                onclick="flipCard(event)"
+                                class="card-button
+                                w-12
+                                rounded-xl
+                                bg-white/10
+                                border border-white/10
+                                text-white
+                                hover:bg-white/20">
+
+                                <i
+                                    class="fa-solid
+                                    fa-rotate">
+                                </i>
+
+                            </button>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- HINT -->
+
+        <p
+            class="text-gray-500
+            text-xs
+            mt-8
+            text-center">
+
+            Tap
+            <span class="text-white">
+                View Contact Details
+            </span>
+            to explore the card
+
+        </p>
+
+
+    </main>
+
+
+
+    <script>
+
+        const whatsappNumber =
+            "919027690490";
+
+
+        const whatsappMessage =
+            "Hello Vaishnavi, I found your digital visiting card.";
+
+
+        const whatsappURL =
+            "https://wa.me/" +
+            whatsappNumber +
+            "?text=" +
+            encodeURIComponent(whatsappMessage);
+
+
+
+        /* QR CODE*/
+
+        new QRCode(
+
+            document.getElementById("qrcode"),
+
+            {
+
+                text: whatsappURL,
+
+                width: 150,
+
+                height: 150,
+
+                colorDark: "#111827",
+
+                colorLight: "#ffffff",
+
+                correctLevel:
+                    QRCode.CorrectLevel.H
+
+            }
+
+        );
+
+
+
+        /* FLIP CARD*/
+
+        function flipCard(event) {
+
+            if (event) {
+
+                event.stopPropagation();
+
+            }
+
+
+            const card =
+                document.getElementById("card");
+
+
+            card.classList.toggle("flipped");
+
+        }
+
+
+
+        /* STOP CARD CLICK*/
+
+        function stopCard(event) {
+
+            event.stopPropagation();
+
+        }
+
+
+
+        /* SAVE CONTACT */
+
+        function saveContact(event) {
+
+            if (event) {
+
+                event.stopPropagation();
+
+            }
+
+
+            const vCard =
+`BEGIN:VCARD
+VERSION:3.0
+FN:Vaishnavi Gupta
+ORG:VAISHNAVI WEB DEV
+TITLE:Web Developer
+TEL;TYPE=CELL:+919027690490
+EMAIL:vaishnavivaishnavigupta2204@gmail.com
+URL:https://vaishnavi-resume.netlify.app/
+ADR:;;New Delhi;Delhi;;India
+END:VCARD`;
+
+
+            const blob =
+                new Blob(
+                    [vCard],
+                    {
+                        type: "text/vcard"
+                    }
+                );
+
+
+            const url =
+                URL.createObjectURL(blob);
+
+
+            const link =
+                document.createElement("a");
+
+
+            link.href = url;
+
+
+            link.download =
+                "Vaishnavi-Gupta.vcf";
+
+
+            document.body.appendChild(link);
+
+
+            link.click();
+
+
+            document.body.removeChild(link);
+
+
+            URL.revokeObjectURL(url);
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>
